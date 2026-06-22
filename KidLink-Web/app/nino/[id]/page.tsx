@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { PhoneIcon, UserIcon, ExclamationTriangleIcon, MapPinIcon } from "@heroicons/react/24/solid";
 
 type TagData = {
   id_tag: string;
@@ -26,13 +27,13 @@ function detectDevice(): string {
 
 function Skeleton() {
   return (
-    <div className="flex min-h-dvh flex-col items-center justify-center gap-6 px-6 animate-pulse">
+    <div className="flex min-h-dvh flex-col items-center justify-center gap-6 px-6 animate-pulse bg-slate-50">
       <div className="size-32 rounded-full bg-gray-200" />
       <div className="h-8 w-48 rounded bg-gray-200" />
       <div className="h-4 w-64 rounded bg-gray-200" />
       <div className="mt-4 flex w-full max-w-sm flex-col gap-3">
-        <div className="h-14 w-full rounded-xl bg-gray-200" />
-        <div className="h-14 w-full rounded-xl bg-gray-200" />
+        <div className="h-14 w-full rounded-3xl bg-gray-200" />
+        <div className="h-14 w-full rounded-3xl bg-gray-200" />
       </div>
     </div>
   );
@@ -40,7 +41,7 @@ function Skeleton() {
 
 function ErrorScreen({ title, message }: { title: string; message: string }) {
   return (
-    <div className="flex min-h-dvh flex-col items-center justify-center px-6 text-center">
+    <div className="flex min-h-dvh flex-col items-center justify-center px-6 text-center bg-slate-50">
       <div className="mb-4 text-6xl">⚠️</div>
       <h1 className="mb-2 text-2xl font-bold text-gray-900">{title}</h1>
       <p className="text-gray-600">{message}</p>
@@ -55,7 +56,7 @@ export default function NinoPage() {
 
   const [pageState, setPageState] = useState<PageState>("loading");
   const [tag, setTag] = useState<TagData | null>(null);
-  const [gpsDenied, setGpsDenied] = useState(false);
+  const [gpsActivo, setGpsActivo] = useState<boolean | null>(null);
 
   useEffect(() => {
     if (!idTag) {
@@ -92,6 +93,7 @@ export default function NinoPage() {
         (position) => {
           if (cancelled || insertedRef.current) return;
           insertedRef.current = true;
+          setGpsActivo(true);
           supabase.from("alertas_escaneo").insert({
             id_tag: idTag,
             latitud: position.coords.latitude,
@@ -103,7 +105,7 @@ export default function NinoPage() {
         () => {
           if (cancelled || insertedRef.current) return;
           insertedRef.current = true;
-          setGpsDenied(true);
+          setGpsActivo(false);
           supabase.from("alertas_escaneo").insert({
             id_tag: idTag,
             latitud: null,
@@ -142,15 +144,24 @@ export default function NinoPage() {
   }
 
   return (
-    <main className="flex min-h-dvh flex-col items-center px-6 py-8">
-      {gpsDenied && (
-        <div className="mb-6 w-full max-w-md rounded-xl bg-amber-50 px-4 py-3 text-center text-sm text-amber-800 ring-1 ring-amber-200">
-          Activa el GPS de tu celular y recarga la página para ayudar a los
-          padres a localizar al niño.
-        </div>
-      )}
+    <main className="flex min-h-dvh flex-col items-center bg-slate-50 px-4 py-6">
+      <div className="flex w-full max-w-md flex-col items-center rounded-3xl bg-white px-4 py-6 shadow-md">
 
-      <div className="flex w-full max-w-md flex-col items-center">
+        {gpsActivo === true && (
+          <div className="mb-6 w-full rounded-xl bg-emerald-50 px-4 py-3 text-center text-sm font-medium text-emerald-700 ring-1 ring-emerald-200">
+            <MapPinIcon className="inline-block mr-1.5 size-5 -mt-0.5 text-emerald-500" />
+            Ubicación compartida con los padres
+          </div>
+        )}
+
+        {gpsActivo === false && (
+          <div className="mb-6 w-full rounded-xl bg-amber-50 px-4 py-3 text-center text-sm text-amber-800 ring-1 ring-amber-200">
+            <ExclamationTriangleIcon className="inline-block mr-1.5 size-5 -mt-0.5 text-amber-500 animate-pulse" />
+            Activa el GPS de tu celular y recarga la página para ayudar a los
+            padres a localizar al niño.
+          </div>
+        )}
+
         <div className="mb-4 size-32 overflow-hidden rounded-full ring-4 ring-blue-100">
           {tag?.url_foto ? (
             <img
@@ -170,11 +181,12 @@ export default function NinoPage() {
         </h1>
 
         {tag?.informacion_medica && (
-          <section className="mb-8 w-full rounded-2xl bg-red-50 p-5 ring-1 ring-red-200">
-            <h2 className="mb-2 flex items-center gap-2 text-lg font-semibold text-red-800">
-              <span>⚠️</span> Información médica importante
+          <section className="mb-8 w-full rounded-2xl border border-red-100 bg-white p-5">
+            <h2 className="mb-2 flex items-center gap-2 text-base font-semibold text-red-800">
+              <ExclamationTriangleIcon className="size-5 text-red-500" />
+              Información médica importante
             </h2>
-            <p className="whitespace-pre-wrap text-red-700">
+            <p className="whitespace-pre-wrap text-base leading-relaxed text-red-700">
               {tag.informacion_medica}
             </p>
           </section>
@@ -183,17 +195,19 @@ export default function NinoPage() {
         <div className="flex w-full flex-col gap-3">
           <a
             href={`tel:${tag?.telefono_contacto}`}
-            className="flex items-center justify-center gap-2 rounded-2xl bg-green-600 px-6 py-4 text-lg font-bold text-white shadow-lg transition active:scale-[0.97] active:bg-green-700"
+            className="flex items-center justify-center gap-3 rounded-full bg-green-600 px-6 py-4 text-lg font-bold text-white shadow-lg transition-all active:scale-95 active:bg-green-700"
           >
-            <span>📞</span> Llamar al Padre
+            <PhoneIcon className="size-6" />
+            Llamar al Padre
           </a>
 
           {tag?.contacto_alternativo && (
             <a
               href={`tel:${tag.contacto_alternativo}`}
-              className="flex items-center justify-center gap-2 rounded-2xl bg-blue-600 px-6 py-4 text-lg font-bold text-white shadow-lg transition active:scale-[0.97] active:bg-blue-700"
+              className="flex items-center justify-center gap-3 rounded-full bg-blue-600 px-6 py-4 text-lg font-bold text-white shadow-lg transition-all active:scale-95 active:bg-blue-700"
             >
-              <span>👤</span> Contacto Alternativo
+              <UserIcon className="size-6" />
+              Contacto Alternativo
             </a>
           )}
         </div>
