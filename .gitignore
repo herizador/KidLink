@@ -8,3 +8,5 @@
 **/.packages
 **/build/
 **/ios/.generated/
+
+**/config.json
