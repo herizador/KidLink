@@ -1,0 +1,10 @@
+# Node / Next.js
+**/node_modules/
+**/.next/
+**.env*.local
+
+# Flutter / Dart
+**/.dart_tool/
+**/.packages
+**/build/
+**/ios/.generated/
