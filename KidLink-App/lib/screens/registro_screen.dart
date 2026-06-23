@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_nfc_kit/flutter_nfc_kit.dart';
 import '../config/app_config.dart';
 import '../models/nino_tag.dart';
 import '../services/supabase_service.dart';
@@ -98,7 +97,7 @@ class _RegistroScreenState extends State<RegistroScreen> {
     setState(() => _estado = _EstadoForm.nfcEscribiendo);
 
     try {
-      await NfcService.instance.escribirUrl(url);
+      await NfcService.instance.escribirEnlaceNfc(url);
       if (!mounted) return;
 
       if (Navigator.of(context).canPop()) {
@@ -108,14 +107,15 @@ class _RegistroScreenState extends State<RegistroScreen> {
       setState(() => _estado = _EstadoForm.exito);
       HapticFeedback.heavyImpact();
       _mostrarExito();
-    } on NfcUserCancelException {
-      setState(() => _estado = _EstadoForm.idle);
-    } on NfcFeatureDisabledException {
-      setState(() => _estado = _EstadoForm.idle);
-      _mostrarError('Activa el NFC en tu dispositivo');
     } catch (e) {
       setState(() => _estado = _EstadoForm.idle);
-      _mostrarError('Error al escribir NFC: ${e.toString()}');
+      if (e.toString().contains('User cancelled') || e.toString().contains('409')) {
+        _mostrarError('Escritura NFC cancelada');
+      } else if (e.toString().contains('NFC')) {
+        _mostrarError('Activa el NFC en tu dispositivo');
+      } else {
+        _mostrarError('Error al escribir NFC: ${e.toString()}');
+      }
     }
   }
 
