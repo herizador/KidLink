@@ -1,4 +1,13 @@
-error: The argument type 'String' can't be assigned to the parameter type 'Uint8List?'.  (argument_type_not_assignable at [kidlink_app] lib\services\nfc_service.dart:39)
-error: The argument type 'String' can't be assigned to the parameter type 'Uint8List?'.  (argument_type_not_assignable at [kidlink_app] lib\services\nfc_service.dart:40)
-error: The argument type 'String' can't be assigned to the parameter type 'Uint8List?'.  (argument_type_not_assignable at [kidlink_app] lib\services\nfc_service.dart:41)
-warning: Warning in the included options file C:\Users\id386\Downloads\flutter\packages\flutter\lib\analysis_options.yaml(9..32): The file includes itself recursively. (included_file_warning at [kidlink_app] analysis_options.yaml:10)
+🔐 REQUERIMIENTO: FLUJO DE AUTENTICACIÓN DE PADRES (SUPABASE AUTH)Contexto del problema:El formulario de registro de niños falla con un error 42501 (Permission Denied) porque la aplicación no tiene un flujo de sesión activo y está intentando insertar datos de forma anónima. Las políticas RLS de la base de datos están bien y exigen estrictamente que el padre esté autenticado.Necesito que implementes una pantalla inicial de Registro / Inicio de Sesión antes de mostrar el formulario de inscripción del niño. Debes usar el sistema de autenticación nativo de Supabase:Creación de la Pantalla de Autenticación (AuthScreen):Diseña un formulario limpio con campos para: Nombre, Email, Contraseña y Teléfono de Emergencia.Añade un botón para "Registrarse" y un enlace de texto abajo que permita cambiar a modo "Iniciar Sesión" (donde solo pida Email y Contraseña).Lógica de Registro (Sign Up):Al presionar "Registrarse", debes llamar al método oficial de supabase_flutter:dartfinal response = await Supabase.instance.client.auth.signUp(
+  email: _emailController.text.trim(),
+  password: _passwordController.text.trim(),
+  data: {
+    'nombre': _nombreController.text.trim(),
+    'telefono_emergencia': _telefonoController.text.trim(),
+  },
+);
+Usa el código con precaución.Nota Crítica: Pasar los datos dentro del parámetro data (User Metadata) es obligatorio para que nuestro trigger de PostgreSQL en Supabase capture el nombre y el teléfono y cree automáticamente la fila en la tabla public.perfiles_padres.Lógica de Inicio de Sesión (Sign In):Si el usuario ya tiene cuenta, permite iniciar sesión con:dartawait Supabase.instance.client.auth.signInWithPassword(
+  email: _emailController.text.trim(),
+  password: _passwordController.text.trim(),
+);
+Usa el código con precaución.Persistencia de Sesión en main.dart:Modifica el punto de entrada de la app para que verifique si hay una sesión activa. Si Supabase.instance.client.auth.currentSession != null, redirige al padre directo al formulario de registro del niño. Si es null, muéstrale la pantalla de AuthScreen.Por favor, entrégame el código de la pantalla de autenticación y las modificaciones necesarias para redirigir correctamente al usuario una vez iniciada la sesión.

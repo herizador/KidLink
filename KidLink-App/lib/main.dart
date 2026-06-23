@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'services/supabase_service.dart';
 import 'screens/registro_screen.dart';
+import 'screens/auth_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -20,7 +21,20 @@ class KidLinkApp extends StatelessWidget {
         colorSchemeSeed: Colors.blue,
         useMaterial3: true,
       ),
-      home: const RegistroScreen(),
+      home: _HomeScreen(),
     );
+  }
+}
+
+class _HomeScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final session = SupabaseService.instance.client.auth.currentSession;
+
+    if (session != null) {
+      return const RegistroScreen();
+    }
+
+    return const AuthScreen();
   }
 }
