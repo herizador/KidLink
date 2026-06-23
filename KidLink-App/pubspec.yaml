@@ -1,0 +1,22 @@
+name: kidlink_app
+description: KidLink – App para padres
+publish_to: "none"
+version: 0.1.0
+
+environment:
+  sdk: ">=3.0.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  supabase_flutter: ^2.8.0
+  flutter_nfc_kit: ^3.4.0
+  flutter_map: ^7.0.0
+  latlong2: ^0.9.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  uses-material-design: true
