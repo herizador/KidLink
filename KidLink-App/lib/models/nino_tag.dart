@@ -20,13 +20,15 @@ class NinoTag {
   });
 
   Map<String, dynamic> toInsertMap() {
-    return {
+    final map = <String, dynamic>{
       'nombre_nino': nombreNino,
       'informacion_medica': informacionMedica,
       'contacto_alternativo': contactoAlternativo,
       'telefono_contacto': telefonoContacto,
       'activo': activo,
     };
+    if (idPadre != null) map['id_padre'] = idPadre;
+    return map;
   }
 
   factory NinoTag.fromSupabase(Map<String, dynamic> data) {

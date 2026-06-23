@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'services/supabase_service.dart';
+import 'screens/splash_screen.dart';
 import 'screens/registro_screen.dart';
 import 'screens/auth_screen.dart';
 
@@ -21,17 +22,42 @@ class KidLinkApp extends StatelessWidget {
         colorSchemeSeed: Colors.blue,
         useMaterial3: true,
       ),
-      home: _HomeScreen(),
+      home: const _HomeScreen(),
     );
   }
 }
 
-class _HomeScreen extends StatelessWidget {
+class _HomeScreen extends StatefulWidget {
+  const _HomeScreen();
+
+  @override
+  State<_HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<_HomeScreen> {
+  bool _revisando = true;
+  bool? _tieneSesion;
+
+  @override
+  void initState() {
+    super.initState();
+    _revisarSesion();
+  }
+
+  Future<void> _revisarSesion() async {
+    final session = SupabaseService.instance.client.auth.currentSession;
+    if (!mounted) return;
+    setState(() {
+      _tieneSesion = session != null;
+      _revisando = false;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    final session = SupabaseService.instance.client.auth.currentSession;
+    if (_revisando) return const SplashScreen();
 
-    if (session != null) {
+    if (_tieneSesion == true) {
       return const RegistroScreen();
     }
 
