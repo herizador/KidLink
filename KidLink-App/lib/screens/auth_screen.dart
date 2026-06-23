@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'registro_screen.dart';
+import 'dashboard_screen.dart';
 
 class AuthScreen extends StatefulWidget {
   const AuthScreen({super.key});
@@ -74,7 +74,7 @@ class _AuthScreenState extends State<AuthScreen> {
       }
 
       Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (_) => const RegistroScreen()),
+        MaterialPageRoute(builder: (_) => const DashboardScreen()),
         (_) => false,
       );
     } on AuthException catch (e) {

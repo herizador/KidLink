@@ -15,6 +15,8 @@ class SupabaseService {
     );
   }
 
+  // --- Niños ---
+
   Future<NinoTag> insertarNino(NinoTag nino) async {
     final response = await client
         .from('ninos_tags')
@@ -23,5 +25,56 @@ class SupabaseService {
         .single();
 
     return NinoTag.fromSupabase(response);
+  }
+
+  Future<NinoTag> actualizarNino(NinoTag nino) async {
+    final response = await client
+        .from('ninos_tags')
+        .update(nino.toInsertMap())
+        .eq('id_tag', nino.idTag)
+        .select()
+        .single();
+
+    return NinoTag.fromSupabase(response);
+  }
+
+  Future<void> eliminarNino(String idTag) async {
+    await client.from('ninos_tags').delete().eq('id_tag', idTag);
+  }
+
+  Future<List<NinoTag>> obtenerNinos(String idPadre) async {
+    final response = await client
+        .from('ninos_tags')
+        .select()
+        .eq('id_padre', idPadre)
+        .order('nombre_nino');
+
+    return (response as List).map((e) => NinoTag.fromSupabase(e)).toList();
+  }
+
+  Future<NinoTag?> obtenerNinoPorId(String idTag) async {
+    final response = await client
+        .from('ninos_tags')
+        .select()
+        .eq('id_tag', idTag)
+        .single();
+
+    return NinoTag.fromSupabase(response);
+  }
+
+  // --- Perfil del padre ---
+
+  Future<Map<String, dynamic>> obtenerPerfil(String userId) async {
+    final response = await client
+        .from('perfiles_padres')
+        .select()
+        .eq('id', userId)
+        .single();
+
+    return response;
+  }
+
+  Future<void> actualizarPerfil(String userId, Map<String, dynamic> data) async {
+    await client.from('perfiles_padres').update(data).eq('id', userId);
   }
 }

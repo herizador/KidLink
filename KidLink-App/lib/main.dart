@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'services/supabase_service.dart';
 import 'screens/splash_screen.dart';
-import 'screens/registro_screen.dart';
+import 'screens/dashboard_screen.dart';
 import 'screens/auth_screen.dart';
 
 void main() async {
@@ -58,7 +58,7 @@ class _HomeScreenState extends State<_HomeScreen> {
     if (_revisando) return const SplashScreen();
 
     if (_tieneSesion == true) {
-      return const RegistroScreen();
+      return const DashboardScreen();
     }
 
     return const AuthScreen();

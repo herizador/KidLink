@@ -13,7 +13,9 @@ import 'alertas_screen.dart';
 enum _EstadoForm { idle, guardando, nfcEscribiendo, exito, error }
 
 class RegistroScreen extends StatefulWidget {
-  const RegistroScreen({super.key});
+  final NinoTag? ninoParaEditar;
+
+  const RegistroScreen({super.key, this.ninoParaEditar});
 
   @override
   State<RegistroScreen> createState() => _RegistroScreenState();
@@ -31,6 +33,18 @@ class _RegistroScreenState extends State<RegistroScreen> {
   _EstadoForm _estado = _EstadoForm.idle;
   String? _idTagGenerado;
   String? _mensajeError;
+
+  @override
+  void initState() {
+    super.initState();
+    final nino = widget.ninoParaEditar;
+    if (nino != null) {
+      _nombreCtrl.text = nino.nombreNino;
+      _medicaCtrl.text = nino.informacionMedica;
+      _telCtrl.text = nino.telefonoContacto;
+      _idTagGenerado = nino.idTag;
+    }
+  }
 
   @override
   void dispose() {
@@ -116,15 +130,19 @@ class _RegistroScreenState extends State<RegistroScreen> {
         urlFoto = await _subirFoto();
       }
 
+      final editing = widget.ninoParaEditar != null;
       final nino = NinoTag(
+        idTag: editing ? widget.ninoParaEditar!.idTag : null,
         idPadre: userId,
         nombreNino: _nombreCtrl.text.trim(),
         informacionMedica: _medicaCtrl.text.trim(),
         telefonoContacto: _telCtrl.text.trim(),
-        urlFoto: urlFoto,
+        urlFoto: urlFoto ?? widget.ninoParaEditar?.urlFoto,
       );
 
-      final creado = await SupabaseService.instance.insertarNino(nino);
+      final creado = editing
+          ? await SupabaseService.instance.actualizarNino(nino)
+          : await SupabaseService.instance.insertarNino(nino);
 
       setState(() {
         _idTagGenerado = creado.idTag;
@@ -234,7 +252,7 @@ class _RegistroScreenState extends State<RegistroScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Registrar en KidLink'),
+        title: Text(widget.ninoParaEditar != null ? 'Editar niño' : 'Registrar en KidLink'),
         actions: [
           IconButton(
             icon: const Icon(Icons.history),
