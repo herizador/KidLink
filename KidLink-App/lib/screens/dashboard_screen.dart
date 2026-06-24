@@ -247,6 +247,50 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
+  void _onToggleActivo(NinoTag nino, bool value) async {
+    setState(() {
+      final idx = _ninos.indexWhere((n) => n.idTag == nino.idTag);
+      if (idx != -1) {
+        _ninos[idx] = NinoTag(
+          idTag: nino.idTag,
+          idPadre: nino.idPadre,
+          nombreNino: nino.nombreNino,
+          informacionMedica: nino.informacionMedica,
+          contactoAlternativo: nino.contactoAlternativo,
+          telefonoContacto: nino.telefonoContacto,
+          urlFoto: nino.urlFoto,
+          activo: value,
+        );
+      }
+    });
+
+    try {
+      await SupabaseService.instance.actualizarEstadoActivo(nino.idTag!, value);
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        final idx = _ninos.indexWhere((n) => n.idTag == nino.idTag);
+        if (idx != -1) {
+          _ninos[idx] = NinoTag(
+            idTag: nino.idTag,
+            idPadre: nino.idPadre,
+            nombreNino: nino.nombreNino,
+            informacionMedica: nino.informacionMedica,
+            contactoAlternativo: nino.contactoAlternativo,
+            telefonoContacto: nino.telefonoContacto,
+            urlFoto: nino.urlFoto,
+            activo: !value,
+          );
+        }
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('No se pudo actualizar el estado de la pulsera. Verifica tu conexión.'),
+        ),
+      );
+    }
+  }
+
   Widget _listaNinos() {
     return RefreshIndicator(
       onRefresh: _cargarNinos,
@@ -264,57 +308,32 @@ class _DashboardScreenState extends State<DashboardScreen> {
           onTap: () => _irARegistro(nino: _ninos[i]),
           onQr: () => _navegarQr(_ninos[i]),
           onEliminar: () => _eliminarNino(_ninos[i]),
-          onEstadoCambiado: (_) => _cargarNinos(),
+          onToggle: (value) => _onToggleActivo(_ninos[i], value),
         ),
       ),
     );
   }
 }
 
-class _TarjetaNino extends StatefulWidget {
+class _TarjetaNino extends StatelessWidget {
   final NinoTag nino;
   final VoidCallback onTap;
   final VoidCallback? onQr;
   final VoidCallback onEliminar;
-  final ValueChanged<bool> onEstadoCambiado;
+  final ValueChanged<bool> onToggle;
 
   const _TarjetaNino({
     required this.nino,
     required this.onTap,
     this.onQr,
     required this.onEliminar,
-    required this.onEstadoCambiado,
+    required this.onToggle,
   });
 
   @override
-  State<_TarjetaNino> createState() => _TarjetaNinoState();
-}
-
-class _TarjetaNinoState extends State<_TarjetaNino> {
-  late bool _activo;
-
-  @override
-  void initState() {
-    super.initState();
-    _activo = widget.nino.activo;
-  }
-
-  Future<void> _toggleActivo(bool value) async {
-    setState(() => _activo = value);
-    try {
-      await SupabaseService.instance.actualizarEstadoActivo(
-        widget.nino.idTag!,
-        value,
-      );
-      widget.onEstadoCambiado(value);
-    } catch (_) {
-      setState(() => _activo = !value);
-    }
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final opacidad = _activo ? 1.0 : 0.55;
+    final activo = nino.activo;
+    final opacidad = activo ? 1.0 : 0.55;
 
     return Opacity(
       opacity: opacidad,
@@ -322,7 +341,7 @@ class _TarjetaNinoState extends State<_TarjetaNino> {
         decoration: AppTheme.cardDecoration(),
         clipBehavior: Clip.antiAlias,
         child: InkWell(
-          onTap: widget.onTap,
+          onTap: onTap,
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -332,10 +351,8 @@ class _TarjetaNinoState extends State<_TarjetaNino> {
                   CircleAvatar(
                     radius: 36,
                     backgroundColor: Colors.grey.shade200,
-                    backgroundImage: widget.nino.urlFoto != null
-                        ? NetworkImage(widget.nino.urlFoto!)
-                        : null,
-                    child: widget.nino.urlFoto == null
+                    backgroundImage: nino.urlFoto != null ? NetworkImage(nino.urlFoto!) : null,
+                    child: nino.urlFoto == null
                         ? Icon(Icons.child_care, size: 36, color: Colors.grey.shade500)
                         : null,
                   ),
@@ -343,18 +360,18 @@ class _TarjetaNinoState extends State<_TarjetaNino> {
                     top: -4,
                     right: -4,
                     child: GestureDetector(
-                      onTap: widget.onEliminar,
+                      onTap: onEliminar,
                       child: Container(
                         width: 28,
                         height: 28,
                         decoration: BoxDecoration(
-                          color: _activo ? const Color(0xFFFEE2E2) : Colors.grey.shade200,
+                          color: activo ? const Color(0xFFFEE2E2) : Colors.grey.shade200,
                           shape: BoxShape.circle,
                         ),
                         child: Icon(
                           Icons.delete_outline,
                           size: 16,
-                          color: _activo ? const Color(0xFFDC2626) : Colors.grey.shade500,
+                          color: activo ? const Color(0xFFDC2626) : Colors.grey.shade500,
                         ),
                       ),
                     ),
@@ -365,7 +382,7 @@ class _TarjetaNinoState extends State<_TarjetaNino> {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 8),
                 child: Text(
-                  widget.nino.nombreNino,
+                  nino.nombreNino,
                   textAlign: TextAlign.center,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
@@ -377,26 +394,26 @@ class _TarjetaNinoState extends State<_TarjetaNino> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    _activo ? 'Activa' : 'Inactiva',
+                    activo ? 'Activa' : 'Inactiva',
                     style: TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.w600,
-                      color: _activo ? const Color(0xFF16A34A) : const Color(0xFF9CA3AF),
+                      color: activo ? const Color(0xFF16A34A) : const Color(0xFF9CA3AF),
                     ),
                   ),
                   const SizedBox(width: 4),
                   Switch.adaptive(
-                    value: _activo,
-                    onChanged: _toggleActivo,
+                    value: activo,
+                    onChanged: onToggle,
                     activeColor: AppTheme.primary,
                     materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   ),
                 ],
               ),
-              if (_activo) ...[
+              if (activo) ...[
                 const SizedBox(height: 4),
                 IconButton(
-                  onPressed: widget.onQr,
+                  onPressed: onQr,
                   icon: const Icon(Icons.qr_code, size: 20, color: AppTheme.primary),
                   tooltip: 'Ver QR',
                   visualDensity: VisualDensity.compact,
