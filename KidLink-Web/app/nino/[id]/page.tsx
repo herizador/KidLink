@@ -135,7 +135,7 @@ export default function NinoPage() {
             dispositivo_origen: detectDevice(),
           }).then(undefined, () => {});
         },
-        { timeout: 10000, enableHighAccuracy: false },
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 },
       );
     }
 
