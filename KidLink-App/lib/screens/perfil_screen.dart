@@ -32,11 +32,19 @@ class _PerfilScreenState extends State<PerfilScreen> {
     final userId = Supabase.instance.client.auth.currentUser?.id;
     if (userId == null) return;
 
-    final data = await SupabaseService.instance.obtenerPerfil(userId);
-    if (!mounted) return;
-    _nombreCtrl.text = data['nombre'] as String? ?? '';
-    _telefonoCtrl.text = data['telefono_emergencia'] as String? ?? '';
-    setState(() => _cargando = false);
+    try {
+      final data = await SupabaseService.instance.obtenerPerfil(userId);
+      if (!mounted) return;
+      _nombreCtrl.text = data['nombre'] as String? ?? '';
+      _telefonoCtrl.text = data['telefono_emergencia'] as String? ?? '';
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error al cargar perfil: ${e.toString()}')),
+      );
+    } finally {
+      if (mounted) setState(() => _cargando = false);
+    }
   }
 
   Future<void> _guardar() async {

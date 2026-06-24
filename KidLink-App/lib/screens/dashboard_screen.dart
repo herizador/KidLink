@@ -5,6 +5,8 @@ import '../services/supabase_service.dart';
 import 'registro_screen.dart';
 import 'alertas_screen.dart';
 import 'perfil_screen.dart';
+import 'qr_screen.dart';
+import 'auth_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -67,11 +69,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
     ).then((_) => _cargarNinos());
   }
 
+  void _navegarQr(NinoTag nino) {
+    const url = String.fromEnvironment('WEB_URGENCIA_URL');
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => QrScreen(nino: nino, webUrgenciaUrl: url),
+      ),
+    );
+  }
+
   Future<void> _cerrarSesion() async {
     await Supabase.instance.client.auth.signOut();
     if (!mounted) return;
     Navigator.of(context).pushAndRemoveUntil(
-      MaterialPageRoute(builder: (_) => const _LoginRedirect()),
+      MaterialPageRoute(builder: (_) => const AuthScreen()),
       (_) => false,
     );
   }
@@ -160,6 +171,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           nino: _ninos[i],
           onTap: () => _irARegistro(nino: _ninos[i]),
           onLongPress: () => _eliminarNino(_ninos[i]),
+          onQr: () => _navegarQr(_ninos[i]),
         ),
       ),
     );
@@ -170,11 +182,13 @@ class _TarjetaNino extends StatelessWidget {
   final NinoTag nino;
   final VoidCallback onTap;
   final VoidCallback onLongPress;
+  final VoidCallback onQr;
 
   const _TarjetaNino({
     required this.nino,
     required this.onTap,
     required this.onLongPress,
+    required this.onQr,
   });
 
   @override
@@ -222,6 +236,13 @@ class _TarjetaNino extends StatelessWidget {
                 ),
               ),
             ),
+            const SizedBox(height: 8),
+            IconButton(
+              onPressed: onQr,
+              icon: const Icon(Icons.qr_code, size: 20),
+              tooltip: 'Ver QR',
+              visualDensity: VisualDensity.compact,
+            ),
           ],
         ),
       ),
@@ -229,11 +250,4 @@ class _TarjetaNino extends StatelessWidget {
   }
 }
 
-class _LoginRedirect extends StatelessWidget {
-  const _LoginRedirect();
 
-  @override
-  Widget build(BuildContext context) {
-    return const Scaffold(body: Center(child: CircularProgressIndicator()));
-  }
-}

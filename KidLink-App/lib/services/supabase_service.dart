@@ -28,10 +28,13 @@ class SupabaseService {
   }
 
   Future<NinoTag> actualizarNino(NinoTag nino) async {
+    final idTag = nino.idTag;
+    if (idTag == null) throw Exception('idTag no puede ser nulo para actualizar');
+
     final response = await client
         .from('ninos_tags')
         .update(nino.toInsertMap())
-        .eq('id_tag', nino.idTag)
+        .eq('id_tag', idTag)
         .select()
         .single();
 
