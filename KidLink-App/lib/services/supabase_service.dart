@@ -45,6 +45,10 @@ class SupabaseService {
     await client.from('ninos_tags').delete().eq('id_tag', idTag);
   }
 
+  Future<void> actualizarEstadoActivo(String idTag, bool activo) async {
+    await client.from('ninos_tags').update({'activo': activo}).eq('id_tag', idTag);
+  }
+
   Future<List<NinoTag>> obtenerNinos(String idPadre) async {
     final response = await client
         .from('ninos_tags')

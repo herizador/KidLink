@@ -4,6 +4,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import '../models/alerta.dart';
+import '../theme/constants.dart';
 
 class AlertasScreen extends StatefulWidget {
   const AlertasScreen({super.key});
@@ -151,11 +152,15 @@ class _AlertasScreenState extends State<AlertasScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Alertas de escaneo')),
+      appBar: AppBar(
+        title: const Text('Alertas de escaneo', style: TextStyle(fontWeight: FontWeight.w700, color: AppTheme.navy)),
+        backgroundColor: Colors.white,
+        elevation: 0,
+      ),
       body: _cargando
-          ? const Center(child: CircularProgressIndicator())
+          ? _skeleton()
           : _alertas.isEmpty
-              ? const Center(child: Text('No hay alertas registradas'))
+              ? const Center(child: Text('No hay alertas registradas', style: TextStyle(color: AppTheme.hintText)))
               : ListView.builder(
                   padding: const EdgeInsets.all(12),
                   itemCount: _alertas.length,
@@ -172,6 +177,55 @@ class _AlertasScreenState extends State<AlertasScreen> {
                     },
                   ),
                 ),
+    );
+  }
+
+  Widget _skeleton() {
+    return ListView.builder(
+      padding: const EdgeInsets.all(12),
+      itemCount: 5,
+      itemBuilder: (_, __) => Container(
+        margin: const EdgeInsets.only(bottom: 8),
+        decoration: BoxDecoration(
+          color: Colors.grey.shade100,
+          borderRadius: BorderRadius.circular(AppTheme.cardRadius),
+        ),
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          children: [
+            Container(
+              width: 40,
+              height: 40,
+              decoration: const BoxDecoration(shape: BoxShape.circle, color: Color(0xFFE2E8F0)),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    width: 120,
+                    height: 14,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFE2E8F0),
+                      borderRadius: BorderRadius.circular(7),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Container(
+                    width: 180,
+                    height: 12,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFE2E8F0),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -191,45 +245,63 @@ class _AlertaCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final sinGps = !alerta.gpsActivo || alerta.latitud == null;
 
-    return Card(
+    return Container(
       margin: const EdgeInsets.only(bottom: 8),
-      color: alerta.visto ? null : Colors.blue.shade50,
-      child: ListTile(
-        leading: CircleAvatar(
-          backgroundColor: sinGps ? Colors.orange.shade100 : Colors.green.shade100,
-          child: Icon(
-            sinGps ? Icons.location_off : Icons.location_on,
-            color: sinGps ? Colors.orange : Colors.green,
+      decoration: AppTheme.cardDecoration(),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(AppTheme.cardRadius),
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            children: [
+              CircleAvatar(
+                backgroundColor: sinGps ? Colors.orange.shade100 : Colors.green.shade100,
+                child: Icon(
+                  sinGps ? Icons.location_off : Icons.location_on,
+                  color: sinGps ? Colors.orange : Colors.green,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      alerta.nombreNino ?? 'Sin nombre',
+                      style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15, color: AppTheme.navy),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      _formatearFecha(alerta.fechaHora),
+                      style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
+                    ),
+                    const SizedBox(height: 4),
+                    Row(
+                      children: [
+                        Icon(iconoDispositivo, size: 14, color: Colors.grey.shade500),
+                        const SizedBox(width: 4),
+                        Text(alerta.dispositivoOrigen, style: TextStyle(fontSize: 12, color: Colors.grey.shade500)),
+                        if (!alerta.visto) ...[
+                          const SizedBox(width: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFFEE2E2),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: const Text('Nuevo', style: TextStyle(fontSize: 10, color: Color(0xFFDC2626), fontWeight: FontWeight.w600)),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              const Icon(Icons.chevron_right, color: Color(0xFFCBD5E1)),
+            ],
           ),
         ),
-        title: Text(alerta.nombreNino ?? 'Sin nombre',
-            style: const TextStyle(fontWeight: FontWeight.w600)),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(_formatearFecha(alerta.fechaHora)),
-            Row(
-              children: [
-                Icon(iconoDispositivo, size: 14, color: Colors.grey),
-                const SizedBox(width: 4),
-                Text(alerta.dispositivoOrigen, style: const TextStyle(fontSize: 12)),
-                if (!alerta.visto) ...[
-                  const SizedBox(width: 8),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: Colors.red.shade100,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text('Nuevo',
-                        style: TextStyle(fontSize: 10, color: Colors.red.shade800)),
-                  ),
-                ],
-              ],
-            ),
-          ],
-        ),
-        onTap: onTap,
       ),
     );
   }

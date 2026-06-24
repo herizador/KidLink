@@ -7,6 +7,7 @@ import '../config/app_config.dart';
 import '../models/nino_tag.dart';
 import '../services/supabase_service.dart';
 import '../services/nfc_service.dart';
+import '../theme/constants.dart';
 import '../widgets/nfc_bottom_sheet.dart';
 import 'alertas_screen.dart';
 
@@ -218,20 +219,25 @@ class _RegistroScreenState extends State<RegistroScreen> {
       context: context,
       barrierDismissible: false,
       builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.check_circle, color: Colors.green, size: 64),
+            const Icon(Icons.check_circle, color: Color(0xFF059669), size: 64),
             const SizedBox(height: 16),
             const Text(
               'Pulsera grabada con éxito',
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: AppTheme.navy),
             ),
-            const SizedBox(height: 8),
-            FilledButton(
-              onPressed: () => Navigator.of(ctx).pop(),
-              child: const Text('Aceptar'),
+            const SizedBox(height: 16),
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton(
+                onPressed: () => Navigator.of(ctx).pop(),
+                style: AppTheme.primaryButton(),
+                child: const Text('Aceptar'),
+              ),
             ),
           ],
         ),
@@ -270,31 +276,38 @@ class _RegistroScreenState extends State<RegistroScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              GestureDetector(
-                onTap: _mostrarSelectorFoto,
-                child: CircleAvatar(
-                  radius: 56,
-                  backgroundColor: Colors.grey.shade200,
-                  backgroundImage: _imageFile != null ? FileImage(_imageFile!) : null,
-                  child: _imageFile == null
-                      ? Icon(Icons.add_a_photo, size: 36, color: Colors.grey.shade600)
-                      : null,
-                ),
-              ),
-              const SizedBox(height: 8),
               Center(
-                child: Text(
-                  _imageFile == null ? 'Presiona para añadir foto' : 'Presiona para cambiar foto',
-                  style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                child: GestureDetector(
+                  onTap: _mostrarSelectorFoto,
+                  child: Container(
+                    decoration: AppTheme.cardDecoration(),
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      children: [
+                        CircleAvatar(
+                          radius: 48,
+                          backgroundColor: const Color(0xFFF1F5F9),
+                          backgroundImage: _imageFile != null ? FileImage(_imageFile!) : null,
+                          child: _imageFile == null
+                              ? const Icon(Icons.add_a_photo, size: 32, color: AppTheme.primary)
+                              : null,
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          _imageFile == null ? 'Añadir foto' : 'Cambiar foto',
+                          style: const TextStyle(fontSize: 13, color: AppTheme.hintText),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
               ),
               const SizedBox(height: 24),
               TextFormField(
                 controller: _nombreCtrl,
-                decoration: const InputDecoration(
-                  labelText: 'Nombre del niño',
-                  prefixIcon: Icon(Icons.person),
-                  border: OutlineInputBorder(),
+                decoration: AppTheme.inputDecoration(
+                  label: 'Nombre del niño',
+                  prefixIcon: const Icon(Icons.person_outline),
                 ),
                 textCapitalization: TextCapitalization.words,
                 validator: (v) =>
@@ -303,75 +316,61 @@ class _RegistroScreenState extends State<RegistroScreen> {
               const SizedBox(height: 16),
               TextFormField(
                 controller: _medicaCtrl,
-                decoration: const InputDecoration(
-                  labelText: 'Información médica',
-                  hintText: 'Alergias, tipo de sangre, condiciones…',
-                  prefixIcon: Icon(Icons.medical_services),
-                  border: OutlineInputBorder(),
+                decoration: AppTheme.inputDecoration(
+                  label: 'Información médica',
+                  hint: 'Alergias, tipo de sangre, condiciones…',
+                  prefixIcon: const Icon(Icons.medical_services_outlined),
                 ),
                 maxLines: 3,
               ),
               const SizedBox(height: 16),
               TextFormField(
                 controller: _telCtrl,
-                decoration: const InputDecoration(
-                  labelText: 'Teléfono de contacto',
-                  prefixIcon: Icon(Icons.phone),
-                  border: OutlineInputBorder(),
+                decoration: AppTheme.inputDecoration(
+                  label: 'Teléfono de contacto',
+                  prefixIcon: const Icon(Icons.phone_outlined),
                 ),
                 keyboardType: TextInputType.phone,
                 validator: (v) =>
                     (v == null || v.trim().isEmpty) ? 'Campo obligatorio' : null,
               ),
               const SizedBox(height: 24),
-              SizedBox(
-                width: double.infinity,
-                height: 56,
-                child: ElevatedButton(
-                  onPressed: guardando ? null : _guardar,
-                  style: ElevatedButton.styleFrom(
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                  ),
-                  child: guardando
-                      ? const SizedBox(
-                          width: 24,
-                          height: 24,
-                          child: CircularProgressIndicator(strokeWidth: 3),
-                        )
-                      : const Text('Guardar', style: TextStyle(fontSize: 18)),
-                ),
+              FilledButton(
+                onPressed: guardando ? null : _guardar,
+                style: AppTheme.primaryButton(),
+                child: guardando
+                    ? const SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: CircularProgressIndicator(strokeWidth: 3, color: Colors.white),
+                      )
+                    : const Text('Guardar datos del niño'),
               ),
               const SizedBox(height: 12),
-              SizedBox(
-                width: double.infinity,
-                height: 56,
-                child: ElevatedButton.icon(
-                  onPressed: (_idTagGenerado != null && !nfcOcupado)
-                      ? _escribirNfc
-                      : null,
-                  icon: const Icon(Icons.nfc),
-                  label: Text(
-                    nfcOcupado ? 'Escribiendo…' : 'Grabar Pulsera/Llavero NFC',
-                    style: const TextStyle(fontSize: 16),
+              FilledButton.icon(
+                onPressed: (_idTagGenerado != null && !nfcOcupado)
+                    ? _escribirNfc
+                    : null,
+                icon: const Icon(Icons.nfc),
+                label: Text(
+                  nfcOcupado ? 'Escribiendo…' : 'Grabar Pulsera / Llavero NFC',
+                ),
+                style: FilledButton.styleFrom(
+                  backgroundColor: const Color(0xFF059669),
+                  disabledBackgroundColor: Colors.grey.shade200,
+                  disabledForegroundColor: Colors.grey.shade400,
+                  minimumSize: const Size.fromHeight(AppTheme.buttonHeight),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(AppTheme.inputRadius),
                   ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green,
-                    foregroundColor: Colors.white,
-                    disabledBackgroundColor: Colors.grey.shade300,
-                    disabledForegroundColor: Colors.grey.shade500,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                  ),
+                  textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                 ),
               ),
               if (_mensajeError != null) ...[
                 const SizedBox(height: 12),
                 Text(
                   _mensajeError!,
-                  style: const TextStyle(color: Colors.red),
+                  style: const TextStyle(color: Colors.red, fontSize: 13),
                   textAlign: TextAlign.center,
                 ),
               ],
