@@ -5,6 +5,9 @@ export const metadata: Metadata = {
   title: "KidLink - Emergencia",
   description:
     "Información de emergencia y contacto para ayudar a un niño perdido",
+  icons: {
+    icon: "/KidLink Logo.png",
+  },
 };
 
 export default function RootLayout({

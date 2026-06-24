@@ -179,13 +179,14 @@ class _AuthScreenState extends State<AuthScreen> {
               children: [
                 const SizedBox(height: 48),
                 Center(
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(16),
-                    child: Image.asset(
-                      'assets/KidLink Logo.png',
-                      width: 80,
-                      height: 80,
+                  child: Container(
+                    width: 72,
+                    height: 72,
+                    decoration: BoxDecoration(
+                      color: AppTheme.primary.withOpacity(0.1),
+                      shape: BoxShape.circle,
                     ),
+                    child: const Icon(Icons.shield, size: 36, color: AppTheme.primary),
                   ),
                 ),
                 const SizedBox(height: 20),

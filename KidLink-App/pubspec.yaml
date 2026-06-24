@@ -22,9 +22,17 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  flutter_launcher_icons: ^0.14.0
 
 flutter:
   uses-material-design: true
 
   assets:
     - assets/KidLink Logo.png
+
+flutter_launcher_icons:
+  android: true
+  ios: false
+  image_path: "assets/KidLink Logo.png"
+  adaptive_icon_background: "#2563EB"
+  adaptive_icon_foreground: "assets/KidLink Logo.png"
