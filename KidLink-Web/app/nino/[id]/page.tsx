@@ -15,7 +15,7 @@ type TagData = {
   activo: boolean;
 };
 
-type PageState = "loading" | "found" | "not_found" | "inactive";
+type PageState = "loading" | "found" | "not_found" | "inactive" | "connection_error";
 
 function detectDevice(): string {
   if (typeof navigator === "undefined") return "Web";
@@ -68,16 +68,37 @@ export default function NinoPage() {
     let cancelled = false;
 
     async function load() {
-      const { data, error } = await supabase
-        .from("ninos_tags")
-        .select("*")
-        .eq("id_tag", idTag)
-        .single();
+      let data: TagData | null = null;
 
-      if (cancelled) return;
+      try {
+        const result = await supabase
+          .from("ninos_tags")
+          .select("*")
+          .eq("id_tag", idTag)
+          .single();
 
-      if (error || !data) {
-        setPageState("not_found");
+        if (cancelled) return;
+
+        if (result.error) {
+          console.error("Supabase error:", result.error);
+          setPageState(
+            result.error.code === "PGRST301" || result.error.code === "406"
+              ? "not_found"
+              : "connection_error",
+          );
+          return;
+        }
+
+        data = result.data;
+
+        if (!data) {
+          setPageState("not_found");
+          return;
+        }
+      } catch (e) {
+        if (cancelled) return;
+        console.error("Error inesperado:", e);
+        setPageState("connection_error");
         return;
       }
 
@@ -134,6 +155,15 @@ export default function NinoPage() {
       />
     );
   }
+  if (pageState === "connection_error") {
+    return (
+      <ErrorScreen
+        title="Error de conexión"
+        message="No se pudo conectar con el servidor de KidLink. Verifica tu conexión a internet e intenta de nuevo."
+      />
+    );
+  }
+
   if (pageState === "inactive") {
     return (
       <ErrorScreen
