@@ -70,24 +70,27 @@ class _QrScreenState extends State<QrScreen> {
             const Spacer(),
             RepaintBoundary(
               key: _reporKey,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  QrImageView(
-                    data: _url,
-                    version: QrVersions.auto,
-                    size: _tamano,
-                    eyeStyle: const QrEyeStyle(
-                      eyeShape: QrEyeShape.square,
-                      color: Colors.black,
+              child: Container(
+                color: Colors.white,
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    QrImageView(
+                      data: _url,
+                      version: QrVersions.auto,
+                      size: _tamano,
+                      eyeStyle: const QrEyeStyle(
+                        eyeShape: QrEyeShape.square,
+                        color: Colors.black,
+                      ),
+                      dataModuleStyle: const QrDataModuleStyle(
+                        dataModuleShape: QrDataModuleShape.square,
+                        color: Colors.black,
+                      ),
                     ),
-                    dataModuleStyle: const QrDataModuleStyle(
-                      dataModuleShape: QrDataModuleShape.square,
-                      color: Colors.black,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
+                    const SizedBox(height: 12),
+                    Text(
                     'En caso de emergencia, escanee este código\n'
                     'o acerque el celular para leer el chip NFC',
                     textAlign: TextAlign.center,
@@ -98,6 +101,7 @@ class _QrScreenState extends State<QrScreen> {
                   ),
                 ],
               ),
+            ),
             ),
             const SizedBox(height: 16),
             Text(
