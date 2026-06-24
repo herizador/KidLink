@@ -1,1 +1,1 @@
-al parecer si va la actualizacion de estado activo/inactivo, pero solo si inicio sesion y cierro sesion, funciona una vez, y despues ya no responde, cierro sesion e inicio, y despues aparece con el estado de supabase tiene, y despues funciona una vez y despues tienes que volver a cerrar sesion e iniciar
+he creado un logo para la web y la app estos se encuentran en C:\Users\id386\Desktop\KidLink\KidLink-App\assets y C:\Users\id386\Desktop\KidLink\KidLink-Web\public el archivo se llama "KidLink Logo.png"
